@@ -1,26 +1,16 @@
 <template>
   <div class="notes">
     <div class="note" :class="{ full: !grid, yellow: note.priority == 'Warm', red: note.priority == 'Hot' }"
-         v-for="(note, index) in notes" :key="index">
+         v-for="note in notesFilter" :key="note.id">
       <div class="note-header">
-        <input type="text" v-if="note.edit" @keyup.enter="note.edit = false, note.date = new Date(Date.now()).toLocaleString()" @keyup.esc="note.edit = false"
+        <input type="text" v-if="note.edit" @keyup.enter="changeNote(note)" @keyup.esc="note.edit = false"
                v-model.lazy="note.title" v-focus>
         <p @click="note.edit = true" v-if="!note.edit">{{ note.title }}</p>
-        <p style="cursor: pointer" @click="removeNote(index)">X</p>
+        <p style="cursor: pointer" @click="removeNote(note.id)">X</p>
       </div>
-      <div class="priority" v-if="note.edit">
-        <label>
-          <input type="radio" name="priority" value="Standart" v-model="note.priority"> Standart
-        </label>
-        <label>
-          <input type="radio" name="priority" value="Warm" v-model="note.priority"> Warm
-        </label>
-        <label>
-          <input type="radio" name="priority" value="Hot" v-model="note.priority"> Hot
-        </label>
-      </div>
+      <priority v-if="note.edit" />
       <div class="note-body">
-        <textarea v-if="note.edit" v-model.lazy="note.descr" @keyup.enter="note.edit = false, note.date = new Date(Date.now()).toLocaleString()"
+        <textarea v-if="note.edit" v-model="note.descr" @keyup.enter="changeNote(note)"
                   @keyup.esc="note.edit = false"></textarea>
         <p v-if="!note.edit">{{ note.descr }}</p>
         <span>{{ note.date }}</span>
@@ -30,23 +20,56 @@
 </template>
 
 <script>
+import priority from '@/components/Priority.vue';
+
 export default {
-  name: 'Notes',
+  components: { priority },
   props: {
-    notes: {
-      type: Array,
-      required: true,
-    },
     grid: {
       type: Boolean,
       required: true,
     },
+    search: {
+      type: String,
+    },
+  },
+  data() {
+    return {
+      edit: false,
+    };
+  },
+  computed: {
+    notesFilter() {
+      let base = this.$store.getters.getNotes;
+      let searchA = this.search;
+
+      if (searchA === '') return base;
+
+      searchA = searchA.trim().toLowerCase();
+
+      // eslint-disable-next-line array-callback-return,consistent-return
+      base = base.filter((item) => {
+        if (item.title.toLowerCase().indexOf(searchA) !== -1) return item;
+      });
+
+      return base;
+    },
   },
   methods: {
-    removeNote(index) {
-      // console.log(`Note id - ${index} removed`);
-      this.$emit('remove', index);
+    changeNote(e) {
+      e.edit = false;
+      e.date = new Date(Date.now()).toLocaleString();
+      e.priority = this.$store.getters.getPriority;
+      this.$store.dispatch('updateNote', e);
     },
+    removeNote(id) {
+      const base = this.$store.getters.getNotes;
+      base.forEach((e, index) => {
+        if (e.id === id) { this.$store.dispatch('removeNote', index); }
+      });
+    },
+  },
+  created() {
   },
   directives: {
     focus: {

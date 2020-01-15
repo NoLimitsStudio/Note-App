@@ -9,7 +9,7 @@
           <message v-if="message" :message="message"/>
 
           <!-- new note -->
-          <new-note :note="note" @newNote="addNote" />
+          <new-note />
 
           <div class="note-header">
             <!-- title-->
@@ -27,7 +27,7 @@
           </div>
 
           <!-- note list -->
-          <notes :notes="notesFilter" :grid="grid" @remove="removeNote"/>
+          <notes :grid="grid" :search="search"/>
         </div>
       </section>
     </div>
@@ -54,80 +54,9 @@ export default {
       title: 'Notes App',
       search: '',
       grid: true,
-      note: {
-        title: '',
-        descr: '',
-        priority: 'Standart',
-        edit: false,
-      },
-      notes: [
-        {
-          title: 'First Note',
-          descr: 'Despcription for first note',
-          date: new Date(Date.now()).toLocaleString(),
-          edit: false,
-          priority: 'Standart',
-        },
-        {
-          title: 'Second Note',
-          descr: 'Despcription for first note',
-          date: new Date(Date.now()).toLocaleString(),
-          edit: false,
-          priority: 'Standart',
-        },
-        {
-          title: 'Third Note',
-          descr: 'Despcription for first note',
-          date: new Date(Date.now()).toLocaleString(),
-          edit: false,
-          priority: 'Standart',
-        },
-      ],
     };
   },
-  computed: {
-    notesFilter() {
-      let array = this.notes;
-      let searchA = this.search;
-
-      if (searchA === '') return array;
-
-      searchA = searchA.trim().toLowerCase();
-
-      // eslint-disable-next-line array-callback-return,consistent-return
-      array = array.filter((item) => {
-        if (item.title.toLowerCase().indexOf(searchA) !== -1) return item;
-      });
-
-      return array;
-    },
-  },
   methods: {
-    addNote() {
-      // console.log(this.note)
-      const { title, descr, priority } = this.note;
-
-      if (title === '') {
-        this.message = 'title can`t be blank!';
-        return false;
-      }
-
-      this.notes.push({
-        title,
-        descr,
-        priority,
-        edit: false,
-        date: new Date(Date.now()).toLocaleString(),
-      });
-      this.message = null;
-      this.note.title = '';
-      this.note.descr = '';
-      this.note.priority = 'Standart';
-      return true;
-    },
-    removeNote(index) {
-      this.notes.splice(index, 1);
-    },
   },
 };
 </script>

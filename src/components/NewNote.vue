@@ -1,36 +1,47 @@
 <template>
   <div class="new-note">
-    <label for="">Title</label>
+    <label>Title</label>
     <input v-model="note.title" type="text">
-    <label for="">Priority</label>
-    <div class="priority">
-      <label>
-        <input type="radio" name="priority" value="Standart" v-model="note.priority"> Standart
-      </label>
-      <label>
-        <input type="radio" name="priority" value="Warm" v-model="note.priority"> Warm
-      </label>
-      <label>
-        <input type="radio" name="priority" value="Hot" v-model="note.priority"> Hot
-      </label>
-    </div>
-    <label for="">Description</label>
+    <label>Priority</label>
+    <priority @prioritySet="note.priority = $event" />
+    <label>Description</label>
     <textarea v-model="note.descr"></textarea>
     <button class="btn btnPrimary" @click="addNote">New note</button>
   </div>
 </template>
 
 <script>
+import priority from '@/components/Priority.vue';
+
 export default {
-  props: {
-    note: {
-      type: Object,
-      required: true,
-    },
+  components: { priority },
+  data() {
+    return {
+      note: {
+        id: null,
+        title: '',
+        descr: '',
+        date: '',
+        edit: false,
+        priority: '',
+      },
+    };
   },
   methods: {
     addNote() {
-      return this.$emit('newNote', this.note);
+      const date = new Date(Date.now()).toLocaleString();
+      this.note.priority = this.$store.getters.getPriority;
+      this.note.date = date;
+      this.note.id = this.$store.getters.getId;
+      this.$store.dispatch('addNote', this.note);
+      this.note = {
+        title: '',
+        descr: '',
+        date: '',
+        edit: false,
+        priority: '',
+      };
+      this.$store.dispatch('setPriority', 'Standart');
     },
   },
 };
@@ -40,21 +51,5 @@ export default {
   .new-note {
     text-align: center;
     margin-bottom: 25px;
-  }
-
-  .priority {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 25px;
-
-    label {
-      margin-right: 25px;
-    }
-
-    input[type=radio] {
-      margin-bottom: 0;
-      width: auto;
-    }
   }
 </style>
